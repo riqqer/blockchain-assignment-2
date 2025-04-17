@@ -1,74 +1,157 @@
-# Blockchain Assignment 2
+# Solana Hello World Program
 
-This is a simple blockchain implementation written in Rust.  
-The project was created as part of a university assignment and is intended for educational purposes. It demonstrates the foundational concepts of how blockchains operate without relying on external libraries.
+## Project Overview
 
-## What This Project Does
+This repository contains a minimal Solana program written in Rust that logs a message to the program log when invoked. It also includes a Rust client example for deploying and invoking this program on a local Solana validator.
 
-This implementation includes:
+## Requirements
 
-- A `Block` struct with timestamp, data, previous hash, and current hash
-- A `Blockchain` struct to manage the chain of blocks
-- Basic transaction logic (if implemented)
-- Hash-based linking between blocks
-- Chain validation
+- Rust (rustc and Cargo) v1.65 or higher (install via https://rustup.rs)
+- Solana CLI v1.18.x (install instructions: https://docs.solana.com/cli/install-solana-cli-tools)
+- `cargo-build-sbf` and `cargo-test-sbf` subcommands for building and testing SBF programs
+- Unix-like shell (Linux/macOS/WSL) or Windows terminal
 
-## Getting Started
+## Repository Structure
 
-### 1. Install Rust
-
-If you don’t have Rust installed, download and install it from the official website:
-
+```text
+blockchain-assignment-2/       # Rename as needed
+├── Cargo.toml                 # Cargo manifest with dependencies
+├── Cargo.lock                 # Locked dependency versions
+├── src/lib.rs                 # Solana program entrypoint and logic
+├── examples/client.rs         # Rust client for deploy & invocation
+└── .gitignore
 ```
-https://rustup.rs
-```
 
-This will install both the Rust compiler (`rustc`) and Cargo (Rust’s package manager and build tool).
-
-### 2. Clone the Repository
-
-Open your terminal and run:
+## Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/riqqer/blockchain-assignment-2.git
 cd blockchain-assignment-2
 ```
 
-### 3. Build the Project
+## Step 2: Build the SBF Program
 
-Use Cargo to build the project:
-
-```bash
-cargo build
-```
-
-This will compile the project and check for any errors.
-
-### 4. Run the Example
-
-You can run the basic example with:
+Compile the Solana program into SBF format:
 
 ```bash
-cargo run --example basic
+cargo build-sbf
 ```
 
-You should see output in the terminal showing blocks being created and added to the chain.  
-This file (`examples/basic.rs`) demonstrates how the blockchain works in practice.
+Upon success, `target/deploy/` will contain:
 
-## Project Structure
+- `hello_world.so` — the compiled program
+- `hello_world-keypair.json` — the keypair file containing the program ID
 
-```
-blockchain-assignment-2/
-├── Cargo.toml         # Rust project configuration file
-├── src/
-│   ├── lib.rs         # Main blockchain 
-├── examples/
-│   └── client.rs       # A working example that uses the blockchain
-└── .gitignore         # Git ignore rules
+## Step 3: Start the Local Validator
+
+In a separate terminal, run:
+
+```bash
+solana-test-validator
 ```
 
-## Key Files Explained
+This launches a local Solana cluster at `http://localhost:8899`.
 
-- `lib.rs`: Contains all the core logic. Defines how blocks and the blockchain are structured and linked.
-- `client.rs`: Demonstrates creating a blockchain, adding blocks, and printing them.
-- `Cargo.toml`: Manages project dependencies and metadata.
+## Step 4: Configure the Solana CLI
+
+Point the CLI to your local validator:
+
+```bash
+solana config set --url http://localhost:8899
+```
+
+## Step 5: Retrieve Your Program ID
+
+Print the public key from the generated keypair:
+
+```bash
+solana address -k target/deploy/hello_world-keypair.json
+```
+
+Copy this `Program ID` for later use.
+
+## Step 6: Fund Your Wallet (Airdrop SOL)
+
+Request some test SOL for transaction fees:
+
+```bash
+solana airdrop 2
+```
+
+Verify your balance:
+
+```bash
+solana balance
+```
+
+## Step 7: Deploy the Program
+
+With the validator still running, execute:
+
+```bash
+solana program deploy target/deploy/hello_world.so
+```
+
+Take note of the returned `Program Id`.
+
+## Step 8: Configure the Client Example
+
+Open `examples/client.rs` and replace the placeholder with your deployed Program ID:
+
+```diff
+- let program_id = Pubkey::from_str("4Ujf5fX...FfMz").unwrap();
++ let program_id = Pubkey::from_str("YOUR_PROGRAM_ID").unwrap();
+```
+
+## Step 9: Run the Client
+
+Build and run the client example:
+
+```bash
+cargo run --example client
+```
+
+This script will:
+
+1. Generate a new keypair for paying transaction fees
+2. Request an airdrop of SOL
+3. Create and sign a transaction invoking your program
+4. Send the transaction and print its signature
+
+## Step 10: Verify Program Logs
+
+In the validator terminal logs, you should see:
+
+```
+Program log: Hello, world!
+```
+
+This confirms that your program executed the `msg!` macro correctly.
+
+## Step 11: Update the Program
+
+To change the logged message:
+
+1. Modify `src/lib.rs`:
+  ```diff
+  - msg!("Hello, world!");
+  + msg!("Hello, Solana!");
+  ```
+2. Rebuild and redeploy:
+   ```bash
+   cargo build-sbf
+   solana program deploy target/deploy/hello_world.so
+   ```
+3. Rerun the client to see the updated log message.
+
+## Step 12: Close the Program
+
+When you no longer need the program, reclaim its SOL balance:
+
+```bash
+solana program close YOUR_PROGRAM_ID --bypass-warning
+```
+
+**Warning:** This operation is irreversible. After closing, the Program ID cannot be reused.
+
+---
