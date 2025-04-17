@@ -61,15 +61,14 @@ This file (`examples/basic.rs`) demonstrates how the blockchain works in practic
 blockchain-assignment-2/
 ├── Cargo.toml         # Rust project configuration file
 ├── src/
-│   ├── lib.rs         # Main blockchain logic
-│   └── main.rs        # Entry point (can be used for testing or left empty)
+│   ├── lib.rs         # Main blockchain 
 ├── examples/
-│   └── basic.rs       # A working example that uses the blockchain
+│   └── client.rs       # A working example that uses the blockchain
 └── .gitignore         # Git ignore rules
 ```
 
 ## Key Files Explained
 
 - `lib.rs`: Contains all the core logic. Defines how blocks and the blockchain are structured and linked.
-- `basic.rs`: Demonstrates creating a blockchain, adding blocks, and printing them.
+- `client.rs`: Demonstrates creating a blockchain, adding blocks, and printing them.
 - `Cargo.toml`: Manages project dependencies and metadata.
